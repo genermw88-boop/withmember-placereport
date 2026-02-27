@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 import streamlit.components.v1 as components
 
-# 1. API 키 설정 (스트림릿 웹 금고에서 안전하게 가져옴)
+# 🚨 보안 시스템: 코드 내부에는 진짜 키를 적지 않습니다.
 try:
     GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
 except Exception:
@@ -51,11 +51,11 @@ with st.form("diagnostic_form"):
 
 if submitted:
     if not current_place_name or not target_area or not main_menu:
-        st.error("필수 정보를 모두 입력해주세요.")
+        st.error("필수 정보를 입력해주세요.")
     else:
-        with st.spinner("AI가 데이터를 분석 중입니다..."):
+        with st.spinner("AI가 분석 중입니다..."):
             
-            # 상태 표시용 HTML 함수 (등록-초록 / 미등록-빨강)
+            # 상태 표시 함수 (등록-초록 / 미등록-빨강)
             def get_status_html(is_used):
                 if is_used:
                     return '<span style="color: #38a169; font-weight: 800;">등록</span>'
@@ -66,10 +66,10 @@ if submitted:
             display_status = f"예약({get_status_html(use_booking)}), 톡톡({get_status_html(use_talktalk)}), 쿠폰({get_status_html(use_coupon)}), 안심번호({get_status_html(use_safecall)})"
             
             prompt = f"""
-            너는 10년 경력의 네이버 플레이스 마케팅 컨설턴트야.
-            ###SEO_SCORE###, ###SEO_RANK###, ###PROBLEM###, ###EFFECT###, ###COMPETITOR_COUNT###, ###COMPETITION###, ###REVIEW_PROBLEM### 구분자를 사용해.
+            너는 10년 경력의 네이버 플레이스 컨설턴트야.
+            ###SEO_SCORE###, ###SEO_RANK###, ###PROBLEM###, ###EFFECT###, ###COMPETITOR_COUNT###, ###COMPETITION###, ###REVIEW_PROBLEM### 구분자를 써서 분석해줘.
             현황: {tool_status_text}, 리뷰: 방문자 {visitor_reviews}/블로그 {blog_reviews}.
-            미등록 도구로 인한 순위 하락을 강조하고 위기감을 조성해줘.
+            미등록 도구로 인한 순위 하락을 강조해줘.
             """
             
             try:
@@ -81,7 +81,7 @@ if submitted:
                     try:
                         part = res_text.split(tag)[1]
                         return part.split(next_tag)[0].strip() if next_tag else part.strip()
-                    except: return "분석 데이터 생성 중..."
+                    except: return "분석 중..."
 
                 score = get_val("###SEO_SCORE###", "###SEO_RANK###")
                 rank = get_val("###SEO_RANK###", "###PROBLEM###")
@@ -116,18 +116,14 @@ if submitted:
                             <div class="row-box"><div class="label">경쟁 매장 :</div><div class="value" style="color: #e53e3e;">{competitor_count}</div></div>
                             <div class="row-box"><div class="label">순위 진단 :</div><div class="value">{competition}</div></div>
                         </div>
-                        <div style="background: #f7fafc; padding: 15px; border-radius: 8px; border: 1px dashed #cbd5e0;">
-                            <h4 class="section-title" style="border:none; margin-bottom:10px;">🚀 2일 차 예고: 리뷰/평판 분석</h4>
-                            <div class="value" style="font-size:14px;">{review_problem}</div>
-                        </div>
                     </div>
-                    <button onclick="downloadImage()" style="margin-top:20px; padding: 12px 24px; background:#2d3748; color:white; border-radius:8px; border:none; cursor:pointer; font-weight:bold;">📸 보고서 이미지 다운로드</button>
+                    <button onclick="downloadImage()" style="margin-top:20px; padding: 12px 24px; background:#2d3748; color:white; border-radius:8px; border:none; cursor:pointer;">📸 리포트 다운로드</button>
                 </div>
                 <script>
                 function downloadImage() {{
                     html2canvas(document.getElementById('report-card'), {{scale: 2, backgroundColor: "#ffffff"}}).then(canvas => {{
                         let link = document.createElement('a');
-                        link.download = '{current_place_name}_진단리포트.png';
+                        link.download = '진단리포트.png';
                         link.href = canvas.toDataURL();
                         link.click();
                     }});
@@ -136,4 +132,4 @@ if submitted:
                 """
                 components.html(html_code, height=1200, scrolling=True)
             except Exception as e:
-                st.error(f"오류 발생: {e}")
+                st.error(f"오류: {e}")
