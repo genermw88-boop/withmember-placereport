@@ -2,9 +2,13 @@ import streamlit as st
 import google.generativeai as genai
 import streamlit.components.v1 as components
 
-# 1. 🚨 (매우 중요) 코드 안에는 진짜 키를 절대 적지 마세요! 
-# 스트림릿 인터넷 금고(Secrets)에서 꺼내오도록 설정된 안전한 코드입니다.
-GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
+# 1. API 키 설정 (스트림릿 웹 금고에서 가져옴)
+try:
+    GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
+except:
+    st.error("API 키가 설정되지 않았습니다. Streamlit 웹 설정의 Secrets에 키를 넣어주세요.")
+    st.stop()
+    
 genai.configure(api_key=GOOGLE_API_KEY)
 
 st.set_page_config(page_title="위드멤버 1일 차 진단기", page_icon="📊", layout="wide")
@@ -152,3 +156,23 @@ if submitted:
                     <button onclick="downloadImage()" style="margin-top: 30px; padding: 15px 30px; font-size: 16px; font-weight: bold; color: #fff; background-color: #2d3748; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); transition: 0.2s;">
                         📸 이 보고서를 이미지(.png)로 다운로드
                     </button>
+                </div>
+
+                <script>
+                function downloadImage() {{
+                    const element = document.getElementById('report-card');
+                    html2canvas(element, {{scale: 2, backgroundColor: "#ffffff"}}).then(canvas => {{
+                        let link = document.createElement('a');
+                        link.download = '{current_place_name}_1일차_진단보고서.png';
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                    }});
+                }}
+                </script>
+                """
+                
+                # HTML 렌더링
+                components.html(html_code, height=1350, scrolling=True)
+                
+            except Exception as e:
+                st.error(f"오류가 발생했습니다: {e}")
