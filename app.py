@@ -21,13 +21,11 @@ with st.form("diagnostic_form"):
     st.subheader("📋 1. 매장 기본 정보")
     col1, col2 = st.columns(2)
     with col1:
-        store_name = st.text_input("실제 간판 상호명", placeholder="예: 정가네")
-        target_area = st.text_input("타겟 지역명", placeholder="예: 서현동")
+        current_place_name = st.text_input("플레이스 등록 이름", placeholder="예: 정가네 부평점")
+        target_area = st.text_input("타겟 지역명", placeholder="예: 부평동")
     with col2:
-        current_place_name = st.text_input("플레이스 등록 이름", placeholder="예: 정가네")
         main_menu = st.text_input("핵심 메뉴/업종", placeholder="예: 삼겹살")
-        
-    current_keywords = st.text_input("현재 등록된 키워드(태그)", placeholder="예: 서현동맛집, 고기집")
+        current_keywords = st.text_input("현재 등록된 키워드(태그)", placeholder="예: 부평맛집, 고기집")
     
     st.markdown("---")
     st.subheader("🛠️ 2. 네이버 플레이스 도구 세팅 여부 (체크)")
@@ -54,8 +52,8 @@ with st.form("diagnostic_form"):
 
 # 3. 진단 실행
 if submitted:
-    if not store_name or not target_area or not main_menu:
-        st.error("상호명, 타겟 지역명, 핵심 메뉴는 필수입니다.")
+    if not current_place_name or not target_area or not main_menu:
+        st.error("플레이스 등록 이름, 타겟 지역명, 핵심 메뉴는 필수입니다.")
     else:
         with st.spinner("AI가 네이버 도구 가산점 누락 여부와 상권 데이터를 분석 중입니다..."):
             
@@ -67,7 +65,7 @@ if submitted:
             아래 7개의 구분자(###)를 사용하여, 특수기호나 HTML 태그 없이 오직 자연스럽고 전문적인 '순수 텍스트'로만 간결하게 작성해.
 
             [입력 데이터]
-            - 매장명: {store_name} / 등록명: {current_place_name}
+            - 플레이스 등록명: {current_place_name}
             - 상권: {target_area} / 업종: {main_menu}
             - 네이버 공식 도구 세팅 현황: {tool_status}
             - 리뷰: 방문자 {visitor_reviews}개 / 블로그 {blog_reviews}개
