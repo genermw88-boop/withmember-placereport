@@ -2,19 +2,19 @@ import streamlit as st
 import google.generativeai as genai
 import streamlit.components.v1 as components
 
-# 1. API 키 설정 (스트림릿 웹 금고에서 가져옴)
+# 🚨 보안 시스템: 코드 안에 진짜 키를 적지 않고, 스트림릿 금고에서 몰래 꺼내옵니다.
 try:
     GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
-except:
-    st.error("API 키가 설정되지 않았습니다. Streamlit 웹 설정의 Secrets에 키를 넣어주세요.")
+except Exception:
+    st.error("보안 금고(Secrets)에 API 키가 없습니다. 설정에서 키를 입력해주세요.")
     st.stop()
-    
+
 genai.configure(api_key=GOOGLE_API_KEY)
 
 st.set_page_config(page_title="위드멤버 1일 차 진단기", page_icon="📊", layout="wide")
 
 st.title("📊 플레이스 진단 리포트")
-st.markdown("가독성을 극대화한 프리미엄 보고서 폼입니다. 500m 상권 경쟁 분석이 추가되었습니다.")
+st.markdown("가독성을 극대화한 프리미엄 보고서 폼입니다. AI가 상권 내 경쟁 강도와 순위를 자동 추정합니다.")
 
 # 폼 입력
 with st.form("diagnostic_form"):
@@ -31,13 +31,11 @@ with st.form("diagnostic_form"):
     
     st.markdown("---")
     st.subheader("📊 매장 리뷰 데이터")
-    col3, col4, col5 = st.columns(3)
+    col3, col4 = st.columns(2)
     with col3:
         visitor_reviews = st.number_input("방문자 리뷰 수", min_value=0, step=1)
     with col4:
         blog_reviews = st.number_input("블로그 리뷰 수", min_value=0, step=1)
-    with col5:
-        competitor_count = st.number_input("500m 내 예상 경쟁 매장 수", min_value=0, step=1, value=15)
     
     submitted = st.form_submit_button("🚀 정밀 보고서 생성 및 이미지 추출")
 
@@ -48,7 +46,6 @@ if submitted:
     else:
         with st.spinner("AI가 지역 상권 데이터와 알고리즘을 정밀 분석 중입니다..."):
             
-            # 2. AI 프롬프트
             prompt = f"""
             너는 10년 경력의 네이버 플레이스 마케팅 전문 컨설턴트야.
             아래 7개의 구분자(###)를 사용하여, 특수기호나 HTML 태그 없이 오직 자연스럽고 전문적인 '순수 텍스트'로만 간결하게 작성해.
@@ -76,10 +73,10 @@ if submitted:
             (빈약했던 소개글을 보완하고 네이버 도구를 적극 세팅했을 때 잠재 고객의 체류 시간과 방문 전환율 향상 기대 효과를 1~2줄로 작성해)
 
             ###COMPETITOR_COUNT###
-            ('{target_area}' 지역 내 '{main_menu}' 업종의 치열함을 고려해, 500m 반경 내 예상 경쟁 매장 수를 현실적으로 추정해서 숫자와 '개' 단위만 딱 1줄로 출력해. 예: 약 25개)
+            ('{target_area}' 지역 내 '{main_menu}' 업종의 치열함을 고려해, 500m 반경 내 예상 경쟁 매장 수를 현실적으로 추정해서 숫자와 '개' 단위만 딱 1줄로 출력해. 예: 약 45개)
 
             ###COMPETITION###
-            (위에서 추정한 경쟁 매장 수 대비, 현재 리뷰({visitor_reviews}개/{blog_reviews}개) 수준이라면 500m 상권 내에서 순위가 대략 어느 정도로 밀려있는지(예: "경쟁 매장 30곳 중 20위권 밖으로 밀려남" 또는 "하위 30% 수준") 팩트를 짚어 사장님께 경각심을 주는 내용 1~2줄)
+            (위에서 네가 추정한 상권 경쟁 매장 수 대비, 현재 리뷰({visitor_reviews}개/{blog_reviews}개) 수준이라면 500m 상권 내에서 순위가 대략 어느 정도로 밀려있는지(예: "상권 내 경쟁 매장 약 40곳 중 30위권 밖으로 밀려남" 또는 "하위 20% 수준") 팩트를 짚어 사장님께 경각심을 주는 내용 1~2줄)
 
             ###REVIEW_PROBLEM###
             (현재 방문자 및 블로그 리뷰 수치에 대한 객관적인 진단을 하고, 2일 차에 해당 데이터를 정밀 분석해 솔루션을 주겠다는 안내를 1~2줄로 묶어서 작성해)
@@ -88,10 +85,8 @@ if submitted:
             try:
                 model = genai.GenerativeModel('gemini-2.5-flash')
                 response = model.generate_content(prompt)
-                
                 res_text = response.text
                 
-                # 결과 파싱
                 try:
                     score = res_text.split("###SEO_SCORE###")[1].split("###SEO_RANK###")[0].strip()
                     rank = res_text.split("###SEO_RANK###")[1].split("###PROBLEM###")[0].strip()
@@ -104,11 +99,9 @@ if submitted:
                     st.error("AI 응답 형식이 일치하지 않습니다. 버튼을 한 번 더 눌러주세요.")
                     st.stop()
                 
-                # 3. HTML/JS 디자인
                 html_code = f"""
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
                 <div style="padding: 20px; display: flex; flex-direction: column; align-items: center; font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;">
-                    
                     <style>
                         .section-title {{ color: #1a202c; font-size: 18px; font-weight: 800; margin: 0 0 15px 0; padding-bottom: 8px; border-bottom: 2px solid #edf2f7; }}
                         .row-box {{ display: flex; margin-bottom: 12px; align-items: flex-start; }}
@@ -116,7 +109,6 @@ if submitted:
                         .value {{ font-size: 15px; font-weight: 600; color: #2d3748; line-height: 1.6; flex-grow: 1; word-break: keep-all; }}
                         .highlight-box {{ background-color: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-left: 5px solid #3182ce; }}
                     </style>
-
                     <div id="report-card" style="width: 100%; max-width: 680px; padding: 50px 40px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0px 10px 25px rgba(0,0,0,0.05);">
                         <h2 style="color: #1a202c; text-align: center; margin: 0 0 10px 0; font-size: 26px; font-weight: 800; letter-spacing: -1px;">📊 플레이스 진단 리포트</h2>
                         <p style="text-align: center; color: #718096; font-size: 15px; margin-bottom: 40px; font-weight: 600;">대상 매장: <span style="color:#1a202c; font-weight: 800;">{current_place_name}</span></p>
@@ -135,14 +127,14 @@ if submitted:
                         </div>
 
                         <div style="margin-bottom: 35px;">
-                            <h4 class="section-title">💡 3. 네이버 최적화 및 도구 활용 기대효과</h4>
+                            <h4 class="section-title">💡 3. 네이버 최적화 기대효과</h4>
                             <div class="row-box"><div class="label">상호명 최적화 :</div><div class="value" style="color: #2b6cb0;"><strong>[업체명] + [지역명] + [업종]</strong> 조합으로 세팅 시 검색 노출 및 유입률이 대폭 증대됩니다.</div></div>
                             <div class="row-box" style="margin-bottom:0;"><div class="label">도구 및 소개글 :</div><div class="value">{effect}</div></div>
                         </div>
 
                         <div style="margin-bottom: 35px;">
                             <h4 class="section-title">⚔️ 4. 반경 500m 상권 경쟁 진단</h4>
-                            <div class="row-box"><div class="label">상권 내 경쟁 매장 :</div><div class="value" style="color: #e53e3e; font-weight: 800;">{competitor_count} <span style="font-size: 13px; color: #718096; font-weight: 600;">(500m 반경 예상 기준)</span></div></div>
+                            <div class="row-box"><div class="label">상권 내 경쟁 매장 :</div><div class="value" style="color: #e53e3e; font-weight: 800;">{competitor_count} <span style="font-size: 13px; color: #718096; font-weight: 600;">(AI 자동 추정)</span></div></div>
                             <div class="row-box" style="margin-bottom:0;"><div class="label">상권 내 순위 진단 :</div><div class="value">{competition}</div></div>
                         </div>
 
@@ -170,8 +162,6 @@ if submitted:
                 }}
                 </script>
                 """
-                
-                # HTML 렌더링
                 components.html(html_code, height=1350, scrolling=True)
                 
             except Exception as e:
