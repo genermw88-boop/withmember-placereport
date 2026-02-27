@@ -2,14 +2,14 @@ import streamlit as st
 import google.generativeai as genai
 import streamlit.components.v1 as components
 
-# 1. 제미나이 API 키 설정 (대표님의 기존 무료 키 그대로 사용 가능!)
-GOOGLE_API_KEY = "AIzaSyBnuOZynOt8QIz7Ac5RTyXzGp2UoQNS4pg"
+# 1. 제미나이 API 키 설정 (인터넷 배포를 위한 안전한 '비밀 금고' 호출 방식)
+GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
 genai.configure(api_key=GOOGLE_API_KEY)
 
 st.set_page_config(page_title="위드멤버 1일 차 진단기", page_icon="📊", layout="wide")
 
 st.title("📊 플레이스 진단 리포트")
-st.markdown("500m 상권 내 경쟁 매장 수와 비교하여, 현재 매장의 '순위 밀림 현상'을 진단합니다.")
+st.markdown("가독성을 극대화한 프리미엄 보고서 폼입니다. 500m 상권 경쟁 분석이 추가되었습니다.")
 
 # 폼 입력
 with st.form("diagnostic_form"):
@@ -26,11 +26,13 @@ with st.form("diagnostic_form"):
     
     st.markdown("---")
     st.subheader("📊 매장 리뷰 데이터")
-    col3, col4 = st.columns(2)
+    col3, col4, col5 = st.columns(3)
     with col3:
         visitor_reviews = st.number_input("방문자 리뷰 수", min_value=0, step=1)
     with col4:
         blog_reviews = st.number_input("블로그 리뷰 수", min_value=0, step=1)
+    with col5:
+        competitor_count = st.number_input("500m 내 예상 경쟁 매장 수", min_value=0, step=1, value=15)
     
     submitted = st.form_submit_button("🚀 정밀 보고서 생성 및 이미지 추출")
 
@@ -41,7 +43,7 @@ if submitted:
     else:
         with st.spinner("AI가 지역 상권 데이터와 알고리즘을 정밀 분석 중입니다..."):
             
-            # 2. AI 프롬프트 (순위 밀림 현상 집중 진단)
+            # 2. AI 프롬프트
             prompt = f"""
             너는 10년 경력의 네이버 플레이스 마케팅 전문 컨설턴트야.
             아래 7개의 구분자(###)를 사용하여, 특수기호나 HTML 태그 없이 오직 자연스럽고 전문적인 '순수 텍스트'로만 간결하게 작성해.
@@ -72,7 +74,7 @@ if submitted:
             ('{target_area}' 지역 내 '{main_menu}' 업종의 치열함을 고려해, 500m 반경 내 예상 경쟁 매장 수를 현실적으로 추정해서 숫자와 '개' 단위만 딱 1줄로 출력해. 예: 약 25개)
 
             ###COMPETITION###
-            (위에서 추정한 경쟁 매장 수 대비, 현재 리뷰({visitor_reviews}개/{blog_reviews}개) 수준이라면 **500m 상권 내에서 순위가 대략 어느 정도로 밀려있는지(예: "경쟁 매장 30곳 중 20위권 밖으로 밀려남" 또는 "하위 30% 수준")** 팩트를 짚어 사장님께 경각심을 주는 내용 1~2줄)
+            (위에서 추정한 경쟁 매장 수 대비, 현재 리뷰({visitor_reviews}개/{blog_reviews}개) 수준이라면 500m 상권 내에서 순위가 대략 어느 정도로 밀려있는지(예: "경쟁 매장 30곳 중 20위권 밖으로 밀려남" 또는 "하위 30% 수준") 팩트를 짚어 사장님께 경각심을 주는 내용 1~2줄)
 
             ###REVIEW_PROBLEM###
             (현재 방문자 및 블로그 리뷰 수치에 대한 객관적인 진단을 하고, 2일 차에 해당 데이터를 정밀 분석해 솔루션을 주겠다는 안내를 1~2줄로 묶어서 작성해)
