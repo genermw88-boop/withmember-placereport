@@ -14,23 +14,36 @@ genai.configure(api_key=GOOGLE_API_KEY)
 st.set_page_config(page_title="위드멤버 1일 차 진단기", page_icon="📊", layout="wide")
 
 st.title("📊 플레이스 진단 리포트")
-st.markdown("가독성을 극대화한 프리미엄 보고서 폼입니다. AI가 상권 내 경쟁 강도와 순위를 자동 추정합니다.")
+st.markdown("네이버 공식 도구(예약, 톡톡 등) 활용 여부에 따른 알고리즘 순위 누락 현상을 정밀 진단합니다.")
 
 # 폼 입력
 with st.form("diagnostic_form"):
-    st.subheader("📋 매장 기본 정보")
+    st.subheader("📋 1. 매장 기본 정보")
     col1, col2 = st.columns(2)
     with col1:
-        store_name = st.text_input("1. 실제 간판 상호명", placeholder="예: 정가네")
-        target_area = st.text_input("3. 타겟 지역명", placeholder="예: 서현동")
-        current_keywords = st.text_input("5. 현재 등록된 키워드(태그)", placeholder="예: 서현동맛집, 고기집")
+        store_name = st.text_input("실제 간판 상호명", placeholder="예: 정가네")
+        target_area = st.text_input("타겟 지역명", placeholder="예: 서현동")
     with col2:
-        current_place_name = st.text_input("2. 플레이스 등록 이름", placeholder="예: 정가네")
-        main_menu = st.text_input("4. 핵심 메뉴/업종", placeholder="예: 삼겹살")
-        intro_text = st.text_area("6. 현재 플레이스 소개글", placeholder="예: 안녕하세요 정가네입니다.")
+        current_place_name = st.text_input("플레이스 등록 이름", placeholder="예: 정가네")
+        main_menu = st.text_input("핵심 메뉴/업종", placeholder="예: 삼겹살")
+        
+    current_keywords = st.text_input("현재 등록된 키워드(태그)", placeholder="예: 서현동맛집, 고기집")
     
     st.markdown("---")
-    st.subheader("📊 매장 리뷰 데이터")
+    st.subheader("🛠️ 2. 네이버 플레이스 도구 세팅 여부 (체크)")
+    st.caption("현재 사장님 매장에 활성화되어 있는 도구만 체크해 주세요.")
+    col_t1, col_t2, col_t3, col_t4 = st.columns(4)
+    with col_t1:
+        use_booking = st.checkbox("📅 네이버 예약")
+    with col_t2:
+        use_talktalk = st.checkbox("💬 네이버 톡톡")
+    with col_t3:
+        use_coupon = st.checkbox("🎟️ 네이버 쿠폰")
+    with col_t4:
+        use_safecall = st.checkbox("📞 안심번호(스마트콜)")
+
+    st.markdown("---")
+    st.subheader("📊 3. 매장 리뷰 데이터")
     col3, col4 = st.columns(2)
     with col3:
         visitor_reviews = st.number_input("방문자 리뷰 수", min_value=0, step=1)
@@ -44,7 +57,10 @@ if submitted:
     if not store_name or not target_area or not main_menu:
         st.error("상호명, 타겟 지역명, 핵심 메뉴는 필수입니다.")
     else:
-        with st.spinner("AI가 지역 상권 데이터와 알고리즘을 정밀 분석 중입니다..."):
+        with st.spinner("AI가 네이버 도구 가산점 누락 여부와 상권 데이터를 분석 중입니다..."):
+            
+            # 도구 세팅 현황 텍스트화
+            tool_status = f"예약({'사용' if use_booking else '미사용'}), 톡톡({'사용' if use_talktalk else '미사용'}), 쿠폰({'사용' if use_coupon else '미사용'}), 안심번호({'사용' if use_safecall else '미사용'})"
             
             prompt = f"""
             너는 10년 경력의 네이버 플레이스 마케팅 전문 컨설턴트야.
@@ -53,7 +69,7 @@ if submitted:
             [입력 데이터]
             - 매장명: {store_name} / 등록명: {current_place_name}
             - 상권: {target_area} / 업종: {main_menu}
-            - 소개글: {intro_text}
+            - 네이버 공식 도구 세팅 현황: {tool_status}
             - 리뷰: 방문자 {visitor_reviews}개 / 블로그 {blog_reviews}개
 
             [출력 규칙 - 매우 중요]
@@ -67,16 +83,16 @@ if submitted:
             (예: 6~8페이지)
 
             ###PROBLEM###
-            (등록명 '{current_place_name}'의 알고리즘상 한계와 '{intro_text}' 소개글의 부족함, 도구 미활용으로 인한 고객 이탈을 1~2줄로 진단해)
+            (현재 도구 세팅 현황({tool_status})을 짚어주면서, 네이버 공식 도구를 제대로 안 써서 알고리즘 가산점을 못 받고 있으며 이로 인해 경쟁 매장들에 비해 순위가 계속 밀리고 있다는 팩트를 뼈 때리게 진단해 1~2줄)
 
             ###EFFECT###
-            (빈약했던 소개글을 보완하고 네이버 도구를 적극 세팅했을 때 잠재 고객의 체류 시간과 방문 전환율 향상 기대 효과를 1~2줄로 작성해)
+            (미사용 중인 도구를 전부 세팅하고 최적화했을 때, 네이버 알고리즘 체류시간 가산점을 획득하여 노출 순위가 회복되고 고객 방문 전환율이 얼마나 상승할지 기대 효과를 1~2줄로 작성해)
 
             ###COMPETITOR_COUNT###
             ('{target_area}' 지역 내 '{main_menu}' 업종의 치열함을 고려해, 500m 반경 내 예상 경쟁 매장 수를 현실적으로 추정해서 숫자와 '개' 단위만 딱 1줄로 출력해. 예: 약 45개)
 
             ###COMPETITION###
-            (위에서 네가 추정한 상권 경쟁 매장 수 대비, 현재 리뷰({visitor_reviews}개/{blog_reviews}개) 수준이라면 500m 상권 내에서 순위가 대략 어느 정도로 밀려있는지(예: "상권 내 경쟁 매장 약 40곳 중 30위권 밖으로 밀려남" 또는 "하위 20% 수준") 팩트를 짚어 사장님께 경각심을 주는 내용 1~2줄)
+            (위에서 네가 추정한 상권 경쟁 매장 수 대비, 현재 리뷰({visitor_reviews}개/{blog_reviews}개) 수준이라면 500m 상권 내에서 순위가 대략 어느 정도로 밀려있는지(예: "상권 내 경쟁 매장 약 40곳 중 30위권 밖으로 밀려남" 또는 "하위 20% 수준") 사장님께 경각심을 주는 내용 1~2줄)
 
             ###REVIEW_PROBLEM###
             (현재 방문자 및 블로그 리뷰 수치에 대한 객관적인 진단을 하고, 2일 차에 해당 데이터를 정밀 분석해 솔루션을 주겠다는 안내를 1~2줄로 묶어서 작성해)
@@ -121,15 +137,14 @@ if submitted:
                         </div>
 
                         <div style="margin-bottom: 35px;">
-                            <h4 class="section-title">📌 2. 매장 노출 알고리즘 진단</h4>
-                            <div class="row-box"><div class="label">현재 매장명 :</div><div class="value" style="font-weight: 800;">{current_place_name}</div></div>
-                            <div class="row-box" style="margin-bottom:0;"><div class="label">진단 내용 :</div><div class="value">{problem}</div></div>
+                            <h4 class="section-title">📌 2. 네이버 도구 누락 및 알고리즘 진단</h4>
+                            <div class="row-box"><div class="label">현재 세팅 현황 :</div><div class="value" style="font-weight: 800; color: #e53e3e;">{tool_status}</div></div>
+                            <div class="row-box" style="margin-bottom:0;"><div class="label">알고리즘 진단 :</div><div class="value">{problem}</div></div>
                         </div>
 
                         <div style="margin-bottom: 35px;">
-                            <h4 class="section-title">💡 3. 네이버 최적화 기대효과</h4>
-                            <div class="row-box"><div class="label">상호명 최적화 :</div><div class="value" style="color: #2b6cb0;"><strong>[업체명] + [지역명] + [업종]</strong> 조합으로 세팅 시 검색 노출 및 유입률이 대폭 증대됩니다.</div></div>
-                            <div class="row-box" style="margin-bottom:0;"><div class="label">도구 및 소개글 :</div><div class="value">{effect}</div></div>
+                            <h4 class="section-title">💡 3. 도구 최적화 시 기대효과</h4>
+                            <div class="row-box" style="margin-bottom:0;"><div class="label">순위 회복 효과 :</div><div class="value">{effect}</div></div>
                         </div>
 
                         <div style="margin-bottom: 35px;">
