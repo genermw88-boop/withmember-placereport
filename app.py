@@ -18,9 +18,20 @@ def login():
     user_id = st.text_input("아이디")
     user_pw = st.text_input("비밀번호", type="password")
     
+    # ==============================================================
+    # 💡 [아이디/비밀번호 설정 구간] 💡
+    # 이곳에 발급해주고 싶은 아이디와 비밀번호를 추가하거나 수정하시면 됩니다.
+    # 형식: "아이디": "비밀번호",
+    # ==============================================================
+    valid_users = {
+        "부평이명욱": "2207",  # 관리자용
+        "corep": "corep1234",      # 공동대표님용
+        "staff": "staff1234"       # 직원분용
+    }
+    
     if st.button("로그인"):
-        # 사용할 아이디와 비밀번호 설정
-        if user_id == "admin" and user_pw == "withmember123":
+        # 입력한 아이디가 valid_users 목록에 있고, 비밀번호가 일치하는지 확인
+        if user_id in valid_users and valid_users[user_id] == user_pw:
             st.session_state['logged_in'] = True
             st.rerun()  # 로그인 성공 시 화면 새로고침하여 메인 앱으로 이동
         else:
