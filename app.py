@@ -1,4 +1,41 @@
 import streamlit as st
+
+# 1. 초기 세션 상태 설정 (로그인 여부 기억)
+if 'logged_in' not in st.session_state:
+    st.session_state['logged_in'] = False
+
+# 2. 로그인 화면 구성 함수
+def login():
+    st.title("위드멤버 내부 프로그램 로그인")
+    st.write("프로그램 사용을 위해 로그인해 주세요.")
+    
+    # 아이디와 비밀번호 입력 필드 (type="password"로 입력값 숨김 처리)
+    user_id = st.text_input("아이디")
+    user_pw = st.text_input("비밀번호", type="password")
+    
+    if st.button("로그인"):
+        # 사용할 아이디와 비밀번호 설정 (필요에 따라 변경)
+        if user_id == "admin" and user_pw == "withmember123":
+            st.session_state['logged_in'] = True
+            st.rerun()  # 로그인 성공 시 화면 새로고침하여 메인 앱으로 이동
+        else:
+            st.error("아이디 또는 비밀번호가 일치하지 않습니다.")
+
+# 로그아웃 처리 함수
+def logout():
+    st.session_state['logged_in'] = False
+    st.rerun()
+
+# 3. 메인 프로그램 로직 (기존에 만드신 코드)
+def main_app():
+    # 사이드바에 로그아웃 버튼 배치
+    st.sidebar.button("로그아웃", on_click=logout)
+    
+    st.title("플레이스 진단 및 새소식 리뷰 프로그램")
+    st.success("로그인에 성공했습니다. 프로그램을 시작합니다.")
+    
+    # ==========================================
+import streamlit as st
 import google.generativeai as genai
 import streamlit.components.v1 as components
 
@@ -185,3 +222,10 @@ if submitted:
                 
             except Exception as e:
                 st.error(f"오류가 발생했습니다: {e}")
+==========================================
+
+# 4. 앱 실행 흐름 제어 (최상단 로직)
+if not st.session_state['logged_in']:
+    login()      # 로그인 안 되어 있으면 로그인 화면 출력
+else:
+    main_app()   # 로그인 되어 있으면 메인 프로그램 출력
